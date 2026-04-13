@@ -1,0 +1,108 @@
+/* 样式表：在聊天页面上渲染翻译工具栏、翻译按钮和译文框 */
+
+.tt-final-toolbar {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  z-index: 2147483647;
+  font-size: 14px;
+  color: #333;
+}
+
+.tt-final-title {
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.tt-final-btn {
+  margin: 2px;
+  padding: 4px 6px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: opacity 0.2s ease;
+}
+
+.tt-final-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.tt-primary {
+  background: #007bff;
+  color: #fff;
+}
+
+.tt-secondary {
+  background: #6c757d;
+  color: #fff;
+}
+
+.tt-light {
+  background: #f8f9fa;
+  color: #333;
+}
+
+.tt-final-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.tt-final-status {
+  margin-left: 6px;
+  font-size: 12px;
+  color: #555;
+}
+
+.tt-final-message-tools {
+  margin-top: 4px;
+}
+
+.tt-final-message-btn {
+  font-size: 12px;
+  padding: 2px 6px;
+  border: none;
+  background: #e2e6ea;
+  color: #333;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.tt-final-message-btn:hover {
+  background: #d6dadf;
+}
+
+.tt-final-translation-box {
+  margin-top: 4px;
+  background: #f1f3f5;
+  padding: 4px 6px;
+  border-left: 3px solid #007bff;
+  border-radius: 3px;
+  font-size: 13px;
+  color: #333;
+  line-height: 1.4;
+}
+
+.tt-final-badge {
+  display: inline-block;
+  font-size: 10px;
+  color: #fff;
+  background: #007bff;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-right: 4px;
+}
+
+.tt-final-highlight {
+  outline: 2px dashed #007bff;
+}

@@ -1,0 +1,59 @@
+{
+  "manifest_version": 3,
+  "name": "Trade Translator Final",
+  "description": "面向外贸业务场景的翻译和客户管理插件。支持免费谷歌翻译、AI API 翻译，聊天记录导出、客户标签管理等功能。",
+  "version": "1.0.0",
+  "minimum_chrome_version": "114",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs",
+    "downloads"
+  ],
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ],
+  "background": {
+    "service_worker": "src/service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Trade Translator",
+    "default_popup": "popup/popup.html"
+  },
+  "options_page": "options/options.html",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://web.whatsapp.com/*",
+        "https://business.facebook.com/*",
+        "https://www.facebook.com/*",
+        "https://web.facebook.com/*",
+        "https://*.facebook.com/*"
+      ],
+      "js": [
+        "src/content-script.js"
+      ],
+      "css": [
+        "src/content-style.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/*"
+      ],
+      "matches": [
+        "https://web.whatsapp.com/*",
+        "https://business.facebook.com/*",
+        "https://www.facebook.com/*",
+        "https://web.facebook.com/*",
+        "https://*.facebook.com/*"
+      ]
+    }
+  ]
+}
