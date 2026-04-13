@@ -1,10 +1,4 @@
 (() => {
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
   document.addEventListener('DOMContentLoaded', () => {
     const providerSel = document.getElementById('provider');
     const baseUrlEl = document.getElementById('baseUrl');
@@ -20,16 +14,27 @@
     const statusEl = document.getElementById('status');
 
     function showFields() {
-      const val = providerSel.value;
-      document.getElementById('openai-fields').style.display = val === 'openai_compatible' ? 'block' : 'none';
-      document.getElementById('custom-rest-fields').style.display = val === 'custom_rest' ? 'block' : 'none';
+      const provider = providerSel.value;
+      document.getElementById('openai-fields').style.display = provider === 'openai_compatible' ? 'block' : 'none';
+      document.getElementById('custom-rest-fields').style.display = provider === 'custom_rest' ? 'block' : 'none';
     }
 
-    providerSel.addEventListener('change', showFields);
+    function setStatus(message) {
+      statusEl.textContent = message;
+      if (message) {
+        setTimeout(() => {
+          if (statusEl.textContent === message) statusEl.textContent = '';
+        }, 2500);
+      }
+    }
 
-    // Load settings
-    chrome.runtime.sendMessage({ type: 'GET_SETTINGS' }, (resp) => {
-      const settings = resp?.settings || {};
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function fillSettings(settings) {
       providerSel.value = settings.provider || 'google_free';
       baseUrlEl.value = settings.baseUrl || '';
       apiKeyEl.value = settings.apiKey || '';
@@ -42,9 +47,15 @@
       enableToolbarEl.checked = !!settings.enableFloatingToolbar;
       enableAutoDecorateEl.checked = !!settings.enableAutoDecorateMessages;
       showFields();
-    });
+    }
 
-    document.getElementById('saveSettings').addEventListener('click', () => {
+    function loadSettings() {
+      chrome.runtime.sendMessage({ type: 'GET_SETTINGS' }, (resp) => {
+        fillSettings(resp?.settings || {});
+      });
+    }
+
+    function saveSettings() {
       const provider = providerSel.value;
       const payload = {
         provider,
@@ -63,57 +74,73 @@
         payload.customRestApiKey = restApiKeyEl.value.trim();
       }
       chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', payload }, (res) => {
-        statusEl.textContent = res?.ok ? '设置已保存' : '保存失败：' + (res?.error || '未知错误');
-        setTimeout(() => { statusEl.textContent = ''; }, 2000);
-      });
-    });
-
-    // Load tags and populate table
-    function loadTags() {
-      chrome.runtime.sendMessage({ type: 'GET_ALL_TAGS' }, (res) => {
-        const tbody = document.querySelector('#tags-table tbody');
-        if (!tbody) return;
-        tbody.innerHTML = '';
-        const tags = res?.tags || {};
-        const keys = Object.keys(tags);
-        keys.sort();
-        keys.forEach((cid) => {
-          const t = tags[cid] || {};
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${escapeHtml(cid)}</td>
-            <td><input data-field="intention" value="${escapeHtml(t.intention || '')}" /></td>
-            <td><input data-field="region" value="${escapeHtml(t.region || '')}" /></td>
-            <td><input data-field="progress" value="${escapeHtml(t.progress || '')}" /></td>
-            <td><input data-field="language" value="${escapeHtml(t.language || '')}" /></td>
-            <td><button data-action="save" data-convo="${escapeHtml(cid)}">保存</button></td>
-          `;
-          tbody.appendChild(tr);
-        });
+        setStatus(res?.ok ? '设置已保存' : `保存失败：${res?.error || '未知错误'}`);
       });
     }
 
-    loadTags();
+    function renderCustomers(customers) {
+      const tbody = document.querySelector('#tags-table tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
 
-    // Delegate click for save buttons
+      if (!customers.length) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = '<td colspan="6">还没有客户记录。先在聊天页面打开对话，插件会自动采集。</td>';
+        tbody.appendChild(tr);
+        return;
+      }
+
+      customers.forEach((customer) => {
+        const tags = customer.tags || {};
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <div>${escapeHtml(customer.conversationId || '')}</div>
+            <div style="font-size:12px;color:#888;">${escapeHtml(customer.lastMessagePreview || '')}</div>
+          </td>
+          <td><input data-field="intention" value="${escapeHtml(tags.intention || '')}" /></td>
+          <td><input data-field="region" value="${escapeHtml(tags.region || '')}" /></td>
+          <td><input data-field="progress" value="${escapeHtml(tags.progress || '')}" /></td>
+          <td><input data-field="language" value="${escapeHtml(tags.language || '')}" /></td>
+          <td><button data-action="save" data-convo="${escapeHtml(customer.conversationId || '')}">保存</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function loadCustomers() {
+      chrome.runtime.sendMessage({ type: 'GET_CUSTOMER_OVERVIEW' }, (res) => {
+        renderCustomers(Array.isArray(res?.customers) ? res.customers : []);
+      });
+    }
+
+    providerSel.addEventListener('change', showFields);
+    document.getElementById('saveSettings').addEventListener('click', saveSettings);
+
     document.getElementById('tags-section').addEventListener('click', (event) => {
       const btn = event.target.closest('button[data-action="save"]');
       if (!btn) return;
       const cid = btn.getAttribute('data-convo');
       const tr = btn.closest('tr');
       if (!tr || !cid) return;
+
       const tag = {};
       tr.querySelectorAll('input[data-field]').forEach((input) => {
         const field = input.getAttribute('data-field');
         tag[field] = input.value.trim();
       });
-      chrome.runtime.sendMessage({ type: 'UPDATE_TAGS', payload: { conversationId: cid, tags: tag } }, (res) => {
-        statusEl.textContent = res?.ok ? '标签已更新' : '更新失败：' + (res?.error || '未知错误');
-        setTimeout(() => { statusEl.textContent = ''; }, 2000);
+
+      chrome.runtime.sendMessage({
+        type: 'UPDATE_TAGS',
+        payload: { conversationId: cid, tags: tag }
+      }, (res) => {
+        setStatus(res?.ok ? '标签已更新' : `更新失败：${res?.error || '未知错误'}`);
       });
     });
 
-    // Refresh tags when page gains focus (in case tags updated elsewhere)
-    window.addEventListener('focus', loadTags);
+    window.addEventListener('focus', loadCustomers);
+
+    loadSettings();
+    loadCustomers();
   });
 })();

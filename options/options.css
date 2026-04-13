@@ -7,7 +7,7 @@ body {
 }
 
 .container {
-  max-width: 800px;
+  max-width: 1100px;
   margin: 0 auto;
   background: #fff;
   padding: 16px;
@@ -32,6 +32,13 @@ body {
   font-size: 18px;
   border-bottom: 1px solid #eee;
   padding-bottom: 4px;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .form-group {
@@ -61,19 +68,46 @@ body {
   align-items: center;
 }
 
-.primary-btn {
+.language-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.primary-btn,
+.secondary-btn,
+table button {
   padding: 8px 12px;
   font-size: 14px;
   color: #fff;
-  background: #007bff;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   transition: opacity 0.2s ease;
 }
 
-.primary-btn:hover {
+.primary-btn {
+  background: #007bff;
+}
+
+.secondary-btn {
+  background: #6c757d;
+}
+
+table button {
+  padding: 6px 10px;
+  font-size: 13px;
+  background: #28a745;
+}
+
+.primary-btn:hover,
+.secondary-btn:hover,
+table button:hover {
   opacity: 0.9;
+}
+
+.table-wrap {
+  overflow-x: auto;
 }
 
 table {
@@ -87,10 +121,22 @@ table td {
   border: 1px solid #ddd;
   padding: 6px;
   text-align: left;
+  vertical-align: top;
 }
 
 table th {
   background: #f8f9fa;
+  white-space: nowrap;
+}
+
+table td {
+  min-width: 80px;
+}
+
+table td:first-child {
+  min-width: 180px;
+  max-width: 280px;
+  word-break: break-word;
 }
 
 table input {
@@ -101,29 +147,28 @@ table input {
   border-radius: 3px;
 }
 
-table button {
-  padding: 4px 8px;
-  font-size: 13px;
-  border: none;
-  border-radius: 3px;
-  background: #28a745;
-  color: #fff;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-}
-
-table button:hover {
-  opacity: 0.9;
-}
-
 .status {
   font-size: 13px;
   margin-top: 8px;
   color: #555;
 }
 
+.empty-state {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px dashed #ccc;
+  border-radius: 6px;
+  background: #fafafa;
+  color: #666;
+}
+
 .provider-fields {
   border-left: 3px solid #f0f0f0;
   padding-left: 8px;
   margin-bottom: 4px;
+}
+
+.muted {
+  color: #888;
+  font-size: 12px;
 }

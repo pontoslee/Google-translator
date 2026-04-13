@@ -1,2 +1,0 @@
-# Google-translator
-Google-translator
